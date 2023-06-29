@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+import json
 import numpy as np
 import pandas as pd
 import time
@@ -22,7 +23,7 @@ def scroll_to_element(driver, element):
     # element_location = element.location['y']
     # driver.execute_script(f"window.scrollBy(0,{element_location})", "")
     driver.execute_script("arguments[0].scrollIntoView(true);", element)
-    time.sleep(max(0.5, np.abs(np.random.normal(0,1))))
+    time.sleep(min(0.3, np.abs(np.random.normal(0,1))))
 
 
 def get_videos(driver):
@@ -82,6 +83,10 @@ if __name__ == "__main__":
     print('Save the data to a CSV')
     videos_df = pd.DataFrame(videos_data)
     # print(videos_df)
-    videos_df.to_csv('trending.csv', index=None)
     end = time.time()
-    print("Execution Time of Script: {}s".format(end - start))
+    
+    videos_df.to_csv('trending.csv', index=None) # save to csv
+    with open("trending.json", "w") as f: # dump result into a json file
+        json.dump(videos_data, f, indent=4)
+
+    print(f"Execution Time of Script: {(end - start) :.3f}s")
