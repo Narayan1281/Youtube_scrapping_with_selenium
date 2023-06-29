@@ -28,3 +28,30 @@ if __name__ == "__main__":
 
     print (f'Found {len(videos)} videos')
     
+    print('Parsing the first video')
+    # title, url, thumbnail_url, channel, views, uploaded time, description
+    video = videos[0]
+    title_tag = video.find_element(By.ID, 'video-title')
+    title = title_tag.text
+    url = title_tag.get_attribute('href')
+    
+    thumbnail_tag = video.find_element(By.TAG_NAME, 'img')
+    thumbnail_url = thumbnail_tag.get_attribute('src')
+
+    channel_div = video.find_element(By.CLASS_NAME, 'ytd-channel-name')
+    channel_name = channel_div.text
+
+    description = video.find_element(By.ID, 'description-text').text
+
+    metadata_line = video.find_element(By.ID, 'metadata-line')
+    metadata_tags = metadata_line.find_elements(By.TAG_NAME, 'span')
+    views = metadata_tags[0].text
+    uploaded_time = metadata_tags[1].text
+
+    print('Title: ', title)
+    print('URL: ', url)
+    print('Thumbnail URL: ', thumbnail_url)
+    print('Channel Name: ', channel_name)
+    print('Views: ', views)
+    print('Uploaded: ', uploaded_time)
+    print('Description: ', description)
