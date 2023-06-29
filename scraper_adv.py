@@ -79,14 +79,15 @@ if __name__ == "__main__":
     
     print('Parsing top 15 video')
     videos_data = [parse_video(video) for video in videos[:15]]
+    driver.quit()
     
     print('Save the data to a CSV')
     videos_df = pd.DataFrame(videos_data)
     # print(videos_df)
-    end = time.time()
     
     videos_df.to_csv('trending.csv', index=None) # save to csv
     with open("trending.json", "w") as f: # dump result into a json file
         json.dump(videos_data, f, indent=4)
 
+    end = time.time()
     print(f"Execution Time of Script: {(end - start) :.3f}s")
