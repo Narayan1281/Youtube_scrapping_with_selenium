@@ -1,7 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+import numpy as np
 import pandas as pd
+import time
 
 YOUTUBE_TRENDING_URL = "https://www.youtube.com/feed/trending"
 
@@ -10,7 +12,18 @@ def get_driver():
     chrome_options.add_argument("--headless")  
     # chrome_options.add_argument("--disable-infobars")
     driver = webdriver.Chrome(options=chrome_options)
+    driver.maximize_window()
     return driver
+
+def scroll_to_element(driver, element):
+    """Mimics human scrolling behavior and will put the element with 70 pixels of the center of the current viewbox."""
+    window_height = driver.execute_script("return window.innerHeight")
+    start_dom_top = driver.execute_script("return document.documentElement.scrollTop")
+    # element_location = element.location['y']
+    # driver.execute_script(f"window.scrollBy(0,{element_location})", "")
+    driver.execute_script("arguments[0].scrollIntoView(true);", element)
+    time.sleep(max(0.5, np.abs(np.random.normal(0,1))))
+
 
 def get_videos(driver):
     VIDEO_DIV_TAG = 'ytd-video-renderer'
@@ -18,6 +31,9 @@ def get_videos(driver):
     # print('Page title: ', driver.title)
     driver.get(YOUTUBE_TRENDING_URL)
     videos = driver.find_elements(By.TAG_NAME, VIDEO_DIV_TAG)
+    # scroll to the 20th element slowly for each element just to get image thumbnail links properly
+    for i in range(21):
+        scroll_to_element(driver, videos[i])    
     return videos
 
 def parse_video(video):
@@ -51,6 +67,7 @@ def parse_video(video):
     return video_info
 
 if __name__ == "__main__":
+    start = time.time()
     print('Creating driver')
     driver = get_driver()
     
@@ -59,10 +76,12 @@ if __name__ == "__main__":
 
     print (f'Found {len(videos)} videos')
     
-    print('Parsing top 10 video')
-    videos_data = [parse_video(video) for video in videos[:10]]
+    print('Parsing top 15 video')
+    videos_data = [parse_video(video) for video in videos[:15]]
     
     print('Save the data to a CSV')
     videos_df = pd.DataFrame(videos_data)
-    print(videos_df)
-    videos_df.to_csv('trending.csv')
+    # print(videos_df)
+    videos_df.to_csv('trending.csv', index=None)
+    end = time.time()
+    print("Execution Time of Script: {}s".format(end - start))
