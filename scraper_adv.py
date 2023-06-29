@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+import pandas as pd
 
 YOUTUBE_TRENDING_URL = "https://www.youtube.com/feed/trending"
 
@@ -19,18 +20,9 @@ def get_videos(driver):
     videos = driver.find_elements(By.TAG_NAME, VIDEO_DIV_TAG)
     return videos
 
-if __name__ == "__main__":
-    print('Creating driver')
-    driver = get_driver()
-    
-    print('Fetching trending videos')
-    videos = get_videos(driver)
-
-    print (f'Found {len(videos)} videos')
-    
-    print('Parsing the first video')
+def parse_video(video):
     # title, url, thumbnail_url, channel, views, uploaded time, description
-    video = videos[0]
+
     title_tag = video.find_element(By.ID, 'video-title')
     title = title_tag.text
     url = title_tag.get_attribute('href')
@@ -47,11 +39,30 @@ if __name__ == "__main__":
     metadata_tags = metadata_line.find_elements(By.TAG_NAME, 'span')
     views = metadata_tags[0].text
     uploaded_time = metadata_tags[1].text
+    video_info = {
+        'title': title,
+        'url': url,
+        'thumbnail_url': thumbnail_url,
+        'channel': channel_name,
+        'views': views,
+        'uploaded': uploaded_time,
+        'description': description
+    }
+    return video_info
 
-    print('Title: ', title)
-    print('URL: ', url)
-    print('Thumbnail URL: ', thumbnail_url)
-    print('Channel Name: ', channel_name)
-    print('Views: ', views)
-    print('Uploaded: ', uploaded_time)
-    print('Description: ', description)
+if __name__ == "__main__":
+    print('Creating driver')
+    driver = get_driver()
+    
+    print('Fetching trending videos')
+    videos = get_videos(driver)
+
+    print (f'Found {len(videos)} videos')
+    
+    print('Parsing top 10 video')
+    videos_data = [parse_video(video) for video in videos[:10]]
+    
+    print('Save the data to a CSV')
+    videos_df = pd.DataFrame(videos_data)
+    print(videos_df)
+    videos_df.to_csv('trending.csv')
